@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Interface</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'chat/styles.css' %}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById('send').onclick = function() {
+                const query = document.getElementById('query').value;
+                fetch('/send_query/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({'query': query})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const messages = document.getElementById('messages');
+                    messages.innerHTML = '';
+                    data.conversation.forEach(item => {
+                        const userMessage = document.createElement('div');
+                        userMessage.className = 'user-message';
+                        userMessage.textContent = 'User: ' + item.query;
+                        messages.appendChild(userMessage);
+                        const botResponse = document.createElement('div');
+                        botResponse.className = 'bot-response';
+                        botResponse.textContent = 'Bot: ' + item.response;
+                        messages.appendChild(botResponse);
+                    });
+                    document.getElementById('query').value = '';
+                });
+            };
+        });
+    </script>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <input type="text" id="query" placeholder="Type a message...">
+        <button id="send">Send</button>
+    </div>
+</body>
+</html>
